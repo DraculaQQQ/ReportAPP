@@ -1,7 +1,5 @@
 package com.aau.ReportApp;
 
-import android.location.Location;
-
 /**
  * Created by kaspe on 19-11-2015.
  */
