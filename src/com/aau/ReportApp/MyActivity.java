@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,8 +32,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -50,6 +58,14 @@ public class MyActivity extends Activity {
     LocationManager locationManager;
     Location location;
     Issue newIssue;
+
+    //Anders try
+    URL connectURL;
+    String responseString;
+    String Title;
+    String Description;
+    byte[ ] dataToServer;
+    FileInputStream fileInputStream = null;
 
 
 
@@ -157,7 +173,7 @@ public class MyActivity extends Activity {
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(MyActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }*/
-        postData();
+        UploadFile(photoFile);
 
     }
 
@@ -185,44 +201,22 @@ public class MyActivity extends Activity {
         mCurrentPhotoPath = "file://" + image.getAbsolutePath();
         return image;
     }
-    public void postData() {
-        // Create a new HttpClient and Post Header
-        HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost("http://aau.andco.me/postNewIssue");
-        HttpContext localContext = new BasicHttpContext();
 
+    public void UploadFile(File fileToUpload){
         try {
-            // Add your data
-            //List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(6);
 
-            //nameValuePairs.add(new BasicNameValuePair("title", newIssue.getTitle()));
-            //nameValuePairs.add(new BasicNameValuePair("subject", newIssue.getSubject()));
-            //nameValuePairs.add(new BasicNameValuePair("file", "test fil"));
-            //nameValuePairs.add(new BasicNameValuePair("description", newIssue.getDescription()));
-            //nameValuePairs.add(new BasicNameValuePair("issuer", "fra mobil"));
-            //nameValuePairs.add(new BasicNameValuePair("location", "3232"));
+            // Set your file path here
+            FileInputStream fstrm = new FileInputStream(fileToUpload);
 
-            MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-            entity.addPart("title", new StringBody(newIssue.getTitle()));
-            entity.addPart("subject", new StringBody(newIssue.getTitle()));
-            entity.addPart("file", new FileBody(photoFile));
-            entity.addPart("description", new StringBody(newIssue.getDescription()));
-            entity.addPart("issuer", new StringBody("from mobile"));
-            entity.addPart("location", new StringBody("location doesn't work!"));
-            httppost.setEntity(entity);
+            // Set your server page url (and the file title/description)
+            HttpFileUpload hfu = new HttpFileUpload("http://54.93.164.91/postNewIssue", newIssue.getTitle(),newIssue.getDescription(),"anders",newIssue.getSubject(),"location");
 
+            hfu.Send_Now(fstrm);
 
-            //httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-            // Execute HTTP Post Request
-            HttpResponse response = httpclient.execute(httppost, localContext);
-            Toast.makeText(MyActivity.this, response.getStatusLine().toString(), Toast.LENGTH_SHORT).show();
-
-
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
+        } catch (FileNotFoundException e) {
+            // Error: File not found
         }
     }
+
+
 }
